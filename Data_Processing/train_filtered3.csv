@@ -1,4 +1,4 @@
-units,date,store_nbr,item_nbr,station
+units,date,store_nbr,item_nbr,station_nbr
 29,2012-01-01,1,9,1
 2,2012-01-01,1,28,1
 1,2012-01-01,1,51,1

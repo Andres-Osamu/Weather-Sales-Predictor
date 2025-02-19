@@ -63,7 +63,7 @@ def store_station():
         with open('./Data_Processing/train_filtered3.csv', 'w', newline='') as output_file:
             csv_writer = csv.writer(output_file)
 
-            headers.append('station')
+            headers.append('station_nbr')
             csv_writer.writerow(headers)
 
             for row in csv_reader:
@@ -147,8 +147,8 @@ def weather_codes():
                         processed_codes.append(code[-2:])
                     elif len(code) < 4:
                         processed_codes.append(code)
-                    else:
-                        print(code)
+                    # else:
+                        # print(code)
 
                 for type in code_types:
                     if type in processed_codes:
@@ -158,6 +158,25 @@ def weather_codes():
 
                 new_row = row + onehotencoding
                 csv_writer.writerow(new_row)
+
+# Filtering out irrelevant data
+def filter_weather_codes():
+    df = pd.read_csv('./Data_Processing/weather_with_weather_codes.csv')
+
+    # List of columns to drop
+    columns_to_keep = [
+        'station_nbr', 'date', 'tavg', 'dayNum', 'weekday', 'weekend', 
+        'FC+', 'FC', 'TS', 'GR', 'RA', 'DZ', 'SN', 'SG', 'GS', 'PL', 
+        'IC', 'FG+', 'FG', 'BR', 'UP', 'HZ', 'FU', 'VA', 'DU', 'DS', 
+        'PO', 'SA', 'SS', 'PY', 'SQ', 'DR', 'SH', 'FZ', 'MI', 'PR', 
+        'BC', 'BL', 'VC'
+    ]
+
+    # Drop the specified columns
+    df_filtered = df[columns_to_keep]
+
+    # Save the filtered DataFrame to a new CSV file
+    df_filtered.to_csv('./Data_Processing/weather_with_weather_codes2.csv', index=False)
 
 
 # This function combines data from 'train_filtered3.csv' and 'weather_with_weather_codes2.csv'
@@ -179,7 +198,7 @@ def combine_train_with_weather():
         with open('./Data_Processing/weather_with_weather_codes2.csv', 'r') as weather_file:
             csv_reader2 = csv.reader(weather_file)
             next(csv_reader2)
-            with open('train_filtered4.csv', 'w', newline='') as output_file:
+            with open('./Data_Processing/train_filtered4.csv', 'w', newline='') as output_file:
                 csv_writer = csv.writer(output_file)
                 csv_writer.writerow(headers)
 
@@ -200,11 +219,11 @@ def combine_train_with_weather():
 def combine():
     data = pd.read_csv('./Data_Processing/train_filtered3.csv')
     weather = pd.read_csv('./Data_Processing/weather_with_weather_codes2.csv')
-    print(data.info())
+    # print(data.info())
     merged_df = pd.merge(data, weather, on=['date', 'station_nbr'])
-    print(merged_df.head(5))
+    # print(merged_df.head(5))
 
-    file_name = 'merged_data.csv'
+    file_name = './Data_Processing/merged_data.csv'
     merged_df.to_csv(file_name)
 
 
@@ -213,10 +232,27 @@ def combine():
 # Input : merged_data.csv
 # Output : train_data
 def combine_train():
-    test = pd.read_csv("./merged_data.csv", index_col=False)
+    test = pd.read_csv("./Data_Processing/merged_data.csv", index_col=False)
     test['label'] = test.apply(lambda x: str(x['store_nbr']) + '_' + str(x['item_nbr']) + '_' + str(x['date']), axis=1)
     test = test.drop(['store_nbr', 'item_nbr', 'date'], axis=1)
-    test.to_csv("train_data.csv", index=False)
+    test.to_csv("./Model_Training/train_data.csv", index=False)
+
+
+# Filter weather data
+def filter_weather():
+    # Filtering out irrelevant data
+    df = pd.read_csv('./Data_Processing/weather_with_weekday_weekend.csv')
+
+    # List of columns to drop
+    columns_to_keep = [
+        'station_nbr', 'date', 'tmax', 'tmin', 'dayNum', 'weekday', 'weekend'
+    ]
+
+    # Drop the specified columns
+    df_filtered = df[columns_to_keep]
+
+    # Save the filtered DataFrame to a new CSV file
+    df_filtered.to_csv('./Data_Processing/weather_training.csv', index=False)
 
 
 # This code enriches the 'sampleSubmission.csv' dataset with weather data from 'weather_training.csv',
@@ -224,7 +260,7 @@ def combine_train():
 # Input : key.csv & sampleSubmission.csv
 # Output : testing_data.csv
 def combine_test():
-    key_df = pd.read_csv("./Dnfiltered_Data/key.csv")
+    key_df = pd.read_csv("./Unfiltered_Data/key.csv")
     # Store : Station
     store_station_dict = dict(zip(key_df['store_nbr'], key_df['station_nbr']))
 
@@ -240,7 +276,7 @@ def combine_test():
     last_row = None
     counter = 0
     for index1, row1 in sample_df.iterrows():
-        print(counter)
+        # print(counter)
         counter += 1
         t = row1['id']
         data = row1['id'].split("_")
@@ -273,7 +309,7 @@ def combine_test():
                 last_date = date_id
 
 
-    print()
+    # print()
     data_test.to_csv("./Model_Training/testing_data.csv", encoding='utf-8', index=False)
 
 
@@ -306,17 +342,21 @@ def combine_test():
     #     test_labels.append(temp)
 
 def main():
-    filter_train()
-    reorganize_train()
-    store_station()
-    day_of_week()
-    weekday_weekend()
-    weather_codes()
-    filter_train()
-    combine_train_with_weather()
+    # filter_train()
+    # reorganize_train()
+    # store_station()
+    # day_of_week()
+    # weekday_weekend()
+    # weather_codes()
+    # filter_train()
+    # filter_weather_codes()
+    # filter_weather()
+    # combine_train_with_weather()
     # combine()
     # combine_train()
-    # combine_test()
+    print("Starting")
+    combine_test()
+    print("Ending")
 
 if __name__ == "__main__":
     main()
