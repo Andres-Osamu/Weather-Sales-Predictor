@@ -41,6 +41,4 @@ This function combines data from 'train_filtered3.csv' and 'weather_with_weather
 based on matching 'date' and 'station_nbr', and saves the result as 'train_filtered4.csv'.
 
 
-need to refractor all the code so it just uses PDs and doesnt have to use a million csvs
-
 
